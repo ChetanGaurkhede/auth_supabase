@@ -1,5 +1,5 @@
-'use client'
-import userGlobalStore, { IuserGlobalStore } from "@/app/store/user-Store";
+"use client";
+import userGlobalStore, { IuserGlobalStore } from "@/app/store/userStore";
 import React from "react";
 
 function Account() {

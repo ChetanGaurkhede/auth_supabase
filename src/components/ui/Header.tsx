@@ -1,5 +1,4 @@
 import { Iuser } from "@/app/interfaces";
-import userGlobalStore, { IuserGlobalStore } from "@/app/store/user-Store";
 import { Contact, Crown, Home, Menu, User } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "./button";
@@ -14,7 +13,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation"; // ✅ App Router (Correct)
+import { useRouter } from "next/navigation"; // ✅ App Router (Correc
+import userGlobalStore, { IuserGlobalStore } from "@/app/store/userStore";
 
 const userNav = [
   {

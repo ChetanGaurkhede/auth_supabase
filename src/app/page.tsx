@@ -3,14 +3,45 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { SignIn, SignUp } from "@clerk/nextjs";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import userGlobalStore, { IuserGlobalStore } from "./store/user-Store";
+import toast from "react-hot-toast";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import userGlobalStore, { IuserGlobalStore } from "@/app/store/userStore";
+import { getcurrentUserFromSupabase } from "./actions/users";
+import { LoaderCircle } from "lucide-react";
 
 export default function Home() {
   const [openSheet, setOpensheet] = useState(false);
   const searchParams = useSearchParams();
+
+  const { user, setUser } = userGlobalStore() as IuserGlobalStore;
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const { user } = userGlobalStore() as IuserGlobalStore;
+
+  const fetchUser = async () => {
+    try {
+      setLoading(true);
+      const response: any = await getcurrentUserFromSupabase();
+      console.log("Hello");
+      if (!response.success) {
+        throw new Error(response.error);
+      } else {
+        setUser(response.data);
+      }
+    } catch (error) {
+      toast.error("An eeror occurd while fetching user data");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   const [formType, setFormType] = useState<"sign-in" | "sign-up">("sign-in");
 
@@ -22,6 +53,7 @@ export default function Home() {
     } else {
       setOpensheet(false);
     }
+    console.log(user);
   }, [searchParams]);
 
   const toggleForm = () => {
@@ -29,13 +61,23 @@ export default function Home() {
     router.replace(`/?form=${nextForm}`);
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen w-full">
+        <div className="animate-spin">
+          <LoaderCircle className="text-black w-10 h-10" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Header */}
       <header className="w-full p-2 bg-gray-800 fixed top-0 left-0">
         <nav className="container flex justify-between items-center m-auto text-white">
           <h1 className="text-xl font-bold">Logo</h1>
-          {!user && (
+          {user && (
             <button
               className="px-4 py-2 bg-white rounded-xl text-gray-800"
               onClick={() => setOpensheet(true)}
@@ -84,14 +126,20 @@ export default function Home() {
               {formType === "sign-in" ? (
                 <>
                   Don’t have an account?{" "}
-                  <button onClick={toggleForm} className="text-blue-600 underline">
+                  <button
+                    onClick={toggleForm}
+                    className="text-blue-600 underline"
+                  >
                     Sign up
                   </button>
                 </>
               ) : (
                 <>
                   Already have an account?{" "}
-                  <button onClick={toggleForm} className="text-blue-600 underline">
+                  <button
+                    onClick={toggleForm}
+                    className="text-blue-600 underline"
+                  >
                     Sign in
                   </button>
                 </>
